@@ -152,7 +152,7 @@
       Paràmetres configurables per codi (no modificables per l’usuari):
     */
     const VELOCITY = 8;          // Velocitat de moviment en amunt/avall
-    const SCALE = 1;           // Escala de personatges i bales (1 = mida base)
+    const SCALE = 0.5;           // Escala de personatges i bales (1 = mida base)
     const SCORE_FONT_SIZE = 60;  // Mida de la lletra del marcador
 
     // -- Referències a elements --
@@ -305,9 +305,11 @@
     // Disparar una bala
     // ================================
     function shootBullet(shooter) {
-      // So de tret (si es vol)
-      // const shootSound = new Audio("tret.mp3");
-      // shootSound.play();
+      // So de tret
+      const shootSound = new Audio("tret.mp3");
+      shootSound.play().catch(err => {
+        console.warn("Error en reproduir so de tret:", err);
+      });
 
       const bullet = document.createElement("img");
       bullet.src = "bala.png";
@@ -345,9 +347,11 @@
 
         // Comprovar col·lisió
         if (isColliding(bulletRect, targetRect)) {
-          // So d'impacte (si es vol)
-          // const hitSound = new Audio("tocat.mp3");
-          // hitSound.play();
+          // So d'impacte
+          const hitSound = new Audio("tocat.mp3");
+          hitSound.play().catch(err => {
+            console.warn("Error en reproduir so d'impacte:", err);
+          });
 
           // Incrementar marcador
           if (shooter === "P1") {
