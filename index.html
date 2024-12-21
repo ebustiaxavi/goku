@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Joc amb disseny personalitzat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
   <style>
     * {
       box-sizing: border-box;
@@ -34,23 +35,25 @@
       width: 100px; /* Amplada fixa, pots ajustar segons convingui */
       display: flex;
       flex-direction: column;
-      justify-content: space-between; /* caixa superior, marcador al centre, caixa inferior */
+      justify-content: flex-start; 
       align-items: center;
       background-color: #f8f8f8;
       border: 1px solid #ccc;
+      padding-top: 10px;
+      padding-bottom: 10px;
     }
 
     /* Botons de Pujar/Baixar, amb color de fons */
     .side-panel button {
       width: 80px;
-      height: 135px;            /* 3 vegades més que els 45px anteriors */
+      height: 70px;
       font-size: 14px;
       cursor: pointer;
-      margin: 10px 0;
+      margin: 5px 0;
       border-radius: 4px;
       border: 1px solid #999;
     }
-    /* Diferenciem colors per pujar i baixar (opcional) */
+
     .up-button {
       background-color: #b3d9ff; /* Blau clar */
     }
@@ -58,11 +61,17 @@
       background-color: #ffb3b3; /* Vermell clar */
     }
 
+    /* Botó Shoot */
+    .shoot-button {
+      background-color: #b3ffb3; /* Verd clar */
+    }
+
     /* Marcador gran, al centre de la columna, color vermell */
     .score {
       color: red;
       font-weight: bold;
       text-align: center;
+      margin: 10px 0; /* espai entre botons i marcador */
     }
 
     /* ====== Columna central: joc amb imatge de fons ====== */
@@ -106,14 +115,16 @@
   <!-- Distribució principal: 3 columnes -->
   <div class="main-container">
     
-    <!-- Columna ESQUERRA -->
+    <!-- Columna ESQUERRA (Player1) -->
     <div class="side-panel" id="leftPanel">
       <!-- Botó pujar P1 -->
       <button class="up-button" id="btnUpP1">P1 ↑</button>
       <!-- Marcador P1 (impactes encertats a P2) -->
-      <div class="score" id="scoreP1"></div>
+      <div class="score" id="scoreP1">0</div>
       <!-- Botó baixar P1 -->
       <button class="down-button" id="btnDownP1">P1 ↓</button>
+      <!-- Botó disparar P1 -->
+      <button class="shoot-button" id="btnShootP1">Shoot</button>
     </div>
 
     <!-- Contenidor de joc al mig -->
@@ -122,14 +133,16 @@
       <img id="player2" class="character" src="P2.png" alt="Jugador 2" />
     </div>
 
-    <!-- Columna DRETA -->
+    <!-- Columna DRETA (Player2) -->
     <div class="side-panel" id="rightPanel">
       <!-- Botó pujar P2 -->
       <button class="up-button" id="btnUpP2">P2 ↑</button>
       <!-- Marcador P2 (impactes encertats a P1) -->
-      <div class="score" id="scoreP2"></div>
+      <div class="score" id="scoreP2">0</div>
       <!-- Botó baixar P2 -->
       <button class="down-button" id="btnDownP2">P2 ↓</button>
+      <!-- Botó disparar P2 -->
+      <button class="shoot-button" id="btnShootP2">Shoot</button>
     </div>
 
   </div>
@@ -139,7 +152,7 @@
       Paràmetres configurables per codi (no modificables per l’usuari):
     */
     const VELOCITY = 8;          // Velocitat de moviment en amunt/avall
-    const SCALE = 1;           // Escala de personatges i bales (1 = mida base)
+    const SCALE = 3.5;           // Escala de personatges i bales (1 = mida base)
     const SCORE_FONT_SIZE = 80;  // Mida de la lletra del marcador
 
     // -- Referències a elements --
@@ -150,10 +163,12 @@
     // Botons P1
     const btnUpP1 = document.getElementById("btnUpP1");
     const btnDownP1 = document.getElementById("btnDownP1");
+    const btnShootP1 = document.getElementById("btnShootP1");
 
     // Botons P2
     const btnUpP2 = document.getElementById("btnUpP2");
     const btnDownP2 = document.getElementById("btnDownP2");
+    const btnShootP2 = document.getElementById("btnShootP2");
 
     // Marcadors
     const scoreP1 = document.getElementById("scoreP1");  // Impactes de P1 a P2
@@ -216,31 +231,67 @@
 
     animate();
 
-    // Moure P1 amunt/avall mentre es prem el botó
-    btnUpP1.addEventListener("mousedown", () => p1VelocityY = -VELOCITY);
-    btnUpP1.addEventListener("mouseup",   () => p1VelocityY = 0);
-    btnUpP1.addEventListener("mouseleave",() => p1VelocityY = 0);
+    // ================================
+    //   CONTROLS Per a P1
+    // ================================
+    function startMoveP1Up()   { p1VelocityY = -VELOCITY; }
+    function startMoveP1Down() { p1VelocityY =  VELOCITY; }
+    function stopMoveP1()      { p1VelocityY = 0; }
 
-    btnDownP1.addEventListener("mousedown", () => p1VelocityY = VELOCITY);
-    btnDownP1.addEventListener("mouseup",   () => p1VelocityY = 0);
-    btnDownP1.addEventListener("mouseleave",() => p1VelocityY = 0);
+    // Ratolí (desktop)
+    btnUpP1.addEventListener("mousedown", startMoveP1Up);
+    btnUpP1.addEventListener("mouseup",   stopMoveP1);
+    btnUpP1.addEventListener("mouseleave",stopMoveP1);
 
-    // Moure P2 amunt/avall mentre es prem el botó
-    btnUpP2.addEventListener("mousedown", () => p2VelocityY = -VELOCITY);
-    btnUpP2.addEventListener("mouseup",   () => p2VelocityY = 0);
-    btnUpP2.addEventListener("mouseleave",() => p2VelocityY = 0);
+    btnDownP1.addEventListener("mousedown", startMoveP1Down);
+    btnDownP1.addEventListener("mouseup",   stopMoveP1);
+    btnDownP1.addEventListener("mouseleave",stopMoveP1);
 
-    btnDownP2.addEventListener("mousedown", () => p2VelocityY = VELOCITY);
-    btnDownP2.addEventListener("mouseup",   () => p2VelocityY = 0);
-    btnDownP2.addEventListener("mouseleave",() => p2VelocityY = 0);
+    // Tàctil (mòbil)
+    btnUpP1.addEventListener("touchstart",  startMoveP1Up);
+    btnUpP1.addEventListener("touchend",    stopMoveP1);
+    btnUpP1.addEventListener("touchcancel", stopMoveP1);
 
-    // Disparar amb doble clic
-    btnUpP1.addEventListener("dblclick", () => shootBullet("P1"));
-    btnDownP1.addEventListener("dblclick", () => shootBullet("P1"));
-    btnUpP2.addEventListener("dblclick", () => shootBullet("P2"));
-    btnDownP2.addEventListener("dblclick", () => shootBullet("P2"));
+    btnDownP1.addEventListener("touchstart",  startMoveP1Down);
+    btnDownP1.addEventListener("touchend",    stopMoveP1);
+    btnDownP1.addEventListener("touchcancel", stopMoveP1);
 
-    // Funció col·lisió (rectangle vs rectangle)
+    // Disparar (P1)
+    btnShootP1.addEventListener("click", () => shootBullet("P1"));
+    btnShootP1.addEventListener("touchstart", () => shootBullet("P1"));
+
+    // ================================
+    //   CONTROLS Per a P2
+    // ================================
+    function startMoveP2Up()   { p2VelocityY = -VELOCITY; }
+    function startMoveP2Down() { p2VelocityY =  VELOCITY; }
+    function stopMoveP2()      { p2VelocityY = 0; }
+
+    // Ratolí (desktop)
+    btnUpP2.addEventListener("mousedown", startMoveP2Up);
+    btnUpP2.addEventListener("mouseup",   stopMoveP2);
+    btnUpP2.addEventListener("mouseleave",stopMoveP2);
+
+    btnDownP2.addEventListener("mousedown", startMoveP2Down);
+    btnDownP2.addEventListener("mouseup",   stopMoveP2);
+    btnDownP2.addEventListener("mouseleave",stopMoveP2);
+
+    // Tàctil (mòbil)
+    btnUpP2.addEventListener("touchstart",  startMoveP2Up);
+    btnUpP2.addEventListener("touchend",    stopMoveP2);
+    btnUpP2.addEventListener("touchcancel", stopMoveP2);
+
+    btnDownP2.addEventListener("touchstart",  startMoveP2Down);
+    btnDownP2.addEventListener("touchend",    stopMoveP2);
+    btnDownP2.addEventListener("touchcancel", stopMoveP2);
+
+    // Disparar (P2)
+    btnShootP2.addEventListener("click", () => shootBullet("P2"));
+    btnShootP2.addEventListener("touchstart", () => shootBullet("P2"));
+
+    // ================================
+    // Funció per comprovar col·lisió
+    // ================================
     function isColliding(rectA, rectB) {
       return (
         rectA.left < rectB.right &&
@@ -250,14 +301,16 @@
       );
     }
 
+    // ================================
     // Disparar una bala
+    // ================================
     function shootBullet(shooter) {
-      // So de tret
-      const shootSound = new Audio("tret.mp3");
-      shootSound.play();
+      // So de tret (si es vol)
+      // const shootSound = new Audio("tret.mp3");
+      // shootSound.play();
 
       const bullet = document.createElement("img");
-      bullet.src = "Bala.png";
+      bullet.src = "bala.png";
       bullet.classList.add("bullet");
       gameContainer.appendChild(bullet);
 
@@ -282,7 +335,7 @@
       bullet.style.top = startY + "px";
 
       function moveBullet() {
-        const currentX = parseInt(bullet.style.left);
+        const currentX = parseInt(bullet.style.left, 10);
         const newX = currentX + direction * bulletSpeed;
         bullet.style.left = newX + "px";
 
@@ -290,11 +343,11 @@
         const target = (shooter === "P1") ? player2 : player1;
         const targetRect = target.getBoundingClientRect();
 
-        // Col·lisió
+        // Comprovar col·lisió
         if (isColliding(bulletRect, targetRect)) {
-          // So d'impacte
-          const hitSound = new Audio("tocat.mp3");
-          hitSound.play();
+          // So d'impacte (si es vol)
+          // const hitSound = new Audio("tocat.mp3");
+          // hitSound.play();
 
           // Incrementar marcador
           if (shooter === "P1") {
@@ -308,7 +361,7 @@
           return;
         }
 
-        // Si surt del contenidor
+        // Comprovar si la bala surt del contenidor
         if (newX < 0 || newX > gameContainer.clientWidth) {
           bullet.remove();
         } else {
